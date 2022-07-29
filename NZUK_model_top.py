@@ -85,58 +85,58 @@ elif condition == 'no_demand_side_response__high_biomethane':
 year = 2017
 print('\n\n\n YEAR ', year, '\n\n'  )
 second_pass   = 0          
-%run NZUK_model_9_a.ipynb
-%run NZUK_model_9_b.ipynb
+%run NZUK_model_a.ipynb
+%run NZUK_model_b.ipynb
 if no_elasticity == 0:
-    %run NZUK_model_9_c.ipynb
+    %run NZUK_model_c.ipynb
     print('\n=========================================================================')
     print(' Repeating with demand modified due to elasticity of %.2f' % Elasticity, '   Year:', year)  
     print('=========================================================================\n')
     new_electrical_load = elastic_demand   # for demand with elasticity
     second_pass = 1
-    %run NZUK_model_9_b.ipynb
+    %run NZUK_model_b.ipynb
 
 year = 2018
 print('\n\n\n YEAR ', year, '\n\n'  )
 second_pass   = 0          
-%run NZUK_model_9_a.ipynb
-%run NZUK_model_9_b.ipynb
+%run NZUK_model_a.ipynb
+%run NZUK_model_b.ipynb
 if no_elasticity == 0:
-    %run NZUK_model_9_c.ipynb
+    %run NZUK_model_c.ipynb
     print('\n=========================================================================')
     print(' Repeating with demand modified due to elasticity of %.2f' % Elasticity, '   Year:', year)  
     print('=========================================================================\n')
     new_electrical_load = elastic_demand   # for demand with elasticity
     second_pass = 1
-    %run NZUK_model_9_b.ipynb
+    %run NZUK_model_b.ipynb
 
 year = 2019
 print('\n\n\n YEAR ', year, '\n\n'  )
 second_pass   = 0          
-%run NZUK_model_9_a.ipynb
-%run NZUK_model_9_b.ipynb
+%run NZUK_model_a.ipynb
+%run NZUK_model_b.ipynb
 if no_elasticity == 0:
-    %run NZUK_model_9_c.ipynb
+    %run NZUK_model_c.ipynb
     print('\n=========================================================================')
     print(' Repeating with demand modified due to elasticity of %.2f' % Elasticity, '   Year:', year)  
     print('=========================================================================\n')
     new_electrical_load = elastic_demand   # for demand with elasticity
     second_pass = 1
-    %run NZUK_model_9_b.ipynb
+    %run NZUK_model_b.ipynb
 
 year = 2020
 print('\n\n\n YEAR ', year, '\n\n'  )
 second_pass   = 0          
-%run NZUK_model_9_a.ipynb
-%run NZUK_model_9_b.ipynb
+%run NZUK_model_a.ipynb
+%run NZUK_model_b.ipynb
 if no_elasticity == 0:
-    %run NZUK_model_9_c.ipynb
+    %run NZUK_model_c.ipynb
     print('\n=========================================================================')
     print(' Repeating with demand modified due to elasticity of %.2f' % Elasticity, '   Year:', year)  
     print('=========================================================================\n')
     new_electrical_load = elastic_demand   # for demand with elasticity
     second_pass = 1
-    %run NZUK_model_9_b.ipynb
+    %run NZUK_model_b.ipynb
 
 year = 2021
 
@@ -146,25 +146,17 @@ year = 2021
 
 print('\n\n\n YEAR ', year, '\n\n'  )
 second_pass   = 0          
-get_ipython().run_line_magic('run', 'NZUK_model_9_a.ipynb')
-get_ipython().run_line_magic('run', 'NZUK_model_9_b.ipynb')
+get_ipython().run_line_magic('run', 'NZUK_model_a.ipynb')
+get_ipython().run_line_magic('run', 'NZUK_model_b.ipynb')
 if no_elasticity == 0:
-    get_ipython().run_line_magic('run', 'NZUK_model_9_c.ipynb')
+    get_ipython().run_line_magic('run', 'NZUK_model_c.ipynb')
     print('\n=========================================================================')
     print(' Repeating with demand modified due to elasticity of %.2f' % Elasticity, '   Year:', year)  
     print('=========================================================================\n')
     new_electrical_load = elastic_demand   # for demand with elasticity
     second_pass = 1
-    get_ipython().run_line_magic('run', 'NZUK_model_9_b.ipynb')
+    get_ipython().run_line_magic('run', 'NZUK_model_b.ipynb')
 
-
-# In[ ]:
-
-
-
-
-
-# In[ ]:
 
 
 
