@@ -28,14 +28,20 @@
 # Part 2 of the net zero model - to analyse supply, demand and storage requirements 
 # Andy Williams, Loughborough Uni, 2022
 
+# When testing with elasticity we want to suppress the first-pass pre-elastic results
+def conditional_print(message):
+    if (second_pass == 1 or no_elasticity == 1):
+        print(message)
+    
 
-fig2 = plt.figure(figsize=(18,30))
-ax2 = fig2.add_subplot(412)
-ax2.set_xlim(GW_daily.index[0], GW_daily.index[-1])
-#ax2.set_xlim(Heat_load.index[120], Heat_load.index[150])      # setup to zoom in to a chosen area
-ax2.set(xlabel= 'Date', ylabel='Average daily power balance, GW', ylim=(-60, 150), title='Supply minus demand using storage %.0f' % year)
-zero_line = [0] * excess_energy.size
-ax2.plot(GW_daily.index, zero_line, color = 'grey')
+if (second_pass == 1 or no_elasticity == 1):
+    fig2 = plt.figure(figsize=(18,30))
+    ax2 = fig2.add_subplot(412)
+    ax2.set_xlim(GW_daily.index[0], GW_daily.index[-1])
+    #ax2.set_xlim(Heat_load.index[120], Heat_load.index[150])      # setup to zoom in to a chosen area
+    ax2.set(xlabel= 'Date', ylabel='Average daily power balance, GW', ylim=(-60, 150), title='Supply minus demand using storage %.0f' % year)
+    zero_line = [0] * excess_energy.size
+    ax2.plot(GW_daily.index, zero_line, color = 'grey')
 
 # Recalculate total energy
 Total_energy = (GW_daily['wind'] + GW_daily['solar'] + GW_daily['hydro'] + GW_daily['nuclear']                 + GW_daily['biomass'] + tidal)      
@@ -48,7 +54,7 @@ ax2.plot(GW_daily.index, excess_energy,  label = 'Excess renewable energy', colo
 Deficit = pd.DataFrame(excess_energy, index=GW_daily.index)    # make a dataframe
 Deficit[Deficit > 0] = 0  
 Deficit = Deficit.sum().sum() /(-1000) *24                     # so sum up all the deficits
-print("Total energy deficit without storage          = %.1f" % Deficit + " TWh")
+conditional_print("Total energy deficit without storage          = %.1f" % Deficit + " TWh")
 
 
 # ADD METHANE STORAGE
@@ -158,47 +164,47 @@ ax2.fill_between(GW_daily.index, Balance_w_Methane, color = 'plum')
 Deficit_w_Methane_Df = pd.DataFrame(Balance_w_Methane, index=GW_daily.index)     # make a dataframe
 Deficit_w_Methane_Df[Deficit_w_Methane_Df > 0] = 0                               # delete all positive values
 energy_deficit_w_Methane = Deficit_w_Methane_Df.sum().sum() /(-1000)             # so sum up all the deficits
-print("Total energy deficit with methane             = %.2f" % energy_deficit_w_Methane + " TWh")
-print("Total biomethane produced                     = %.1f" % (Total_methane_produced/1000) + " TWh")
-print("Total biomass to make methane                 = %.1f" % (Total_methane_produced/1000) + " TWh")
-print("Electrolysers needed                          = %.1f" % (Electrolysis_rate + 6) + " GW")
+conditional_print("Total energy deficit with methane             = %.2f" % energy_deficit_w_Methane + " TWh")
+conditional_print("Total biomethane produced                     = %.1f" % (Total_methane_produced/1000) + " TWh")
+conditional_print("Total biomass to make methane                 = %.1f" % (Total_methane_produced/1000) + " TWh")
+conditional_print("Electrolysers needed                          = %.1f" % (Electrolysis_rate + 6) + " GW")
  
 Surplus_w_Methane_Df = pd.DataFrame(Balance_w_Methane, index=GW_daily.index, columns=['Bal'])     # make a dataframe
 Surplus_w_Methane_Df[Surplus_w_Methane_Df < 0] = 0                               # delete all negative values
 energy_surplus_w_Methane = Surplus_w_Methane_Df.sum().sum() *24 /1000            # so sum up all the surpluses
-print("Total energy surplus with methane             = %.1f" % energy_surplus_w_Methane + " TWh")
+conditional_print("Total energy surplus with methane             = %.1f" % energy_surplus_w_Methane + " TWh")
 #print(Deficit_w_Methane_Df)
 
 Deficit_days = (Deficit_w_Methane_Df < (-1)).sum()  
-print("Number of days with energy deficit            = %.0f" % Deficit_days)
+conditional_print("Number of days with energy deficit            = %.0f" % Deficit_days)
 Elec_from_methane_DF = pd.DataFrame(Elec_from_methane, index=GW_daily.index, columns=['elec_from_methane'])  # make a df 
 Total_elec_from_biomethane = Elec_from_methane_DF.sum().sum() *24 /1000 
 efficiency_losses = (1/Methane_efficiency) * (1/Electrolysis_efficiency) * Total_elec_from_biomethane
-print("Total electricity produced from biomethane    = %.1f" % Total_elec_from_biomethane + " TWh")
+conditional_print("Total electricity produced from biomethane    = %.1f" % Total_elec_from_biomethane + " TWh")
 CO2_removed = CO2_removal * (Total_elec_from_biomethane + Biomass_total)
-print("CO2 removed if power stations have CCS        = %.1f" % (CO2_removed) + " Mt")
-print("Total energy used up with methane losses      = %.1f" % efficiency_losses + " TWh")
-print("Methane in stock at end of year               = %.1f" % (Methane_stored/1000) + " TWh")
-print("... percentage of max reserves                = %.1f" % (100*Methane_stored/Methane_capacity) + " %  (should be ~75%)")
+conditional_print("CO2 removed if power stations have CCS        = %.1f" % (CO2_removed) + " Mt")
+conditional_print("Total energy used up with methane losses      = %.1f" % efficiency_losses + " TWh")
+conditional_print("Methane in stock at end of year               = %.1f" % (Methane_stored/1000) + " TWh")
+conditional_print("... percentage of max reserves                = %.1f" % (100*Methane_stored/Methane_capacity) + " %  (should be ~75%)")
 
 
-print('\nPOWER STATIONS')
+conditional_print('\nPOWER STATIONS')
 #========================
 
-print("Biomass power stations needed                 = %.1f" % (Total_biomass/days_to_run_biomass/24) + " GW" +     "   (capacity of DRAX is 3.9 GW)")
+conditional_print("Biomass power stations needed                 = %.1f" % (Total_biomass/days_to_run_biomass/24) + " GW" +     "   (capacity of DRAX is 3.9 GW)")
 Elec_from_methane_DF[Elec_from_methane_DF < 0] = 0                               # delete negatives
 ax2.plot(GW_daily.index, Elec_from_methane, label = 'Electricity from biomethane', color = 'green') # Can't plot Elec_from_methane_DF??
 ax2.fill_between(GW_daily.index, Elec_from_methane_DF["elec_from_methane"], color = 'palegreen') 
 Max_daily_elec_from_methane = Elec_from_methane_DF['elec_from_methane'].nlargest(n=1)
-print("Methane power stations needed                 = %.1f" % (Max_daily_elec_from_methane) + " GW" +      "  (max gas-fired power in 2021 was 25 GW)")
-print("Total electricity generated from methane      = %.1f" % (Elec_from_methane_DF.sum().sum()/1000 *24) + " TWh")
+conditional_print("Methane power stations needed                 = %.1f" % (Max_daily_elec_from_methane) + " GW" +      "  (max gas-fired power in 2021 was 25 GW)")
+conditional_print("Total electricity generated from methane      = %.1f" % (Elec_from_methane_DF.sum().sum()/1000 *24) + " TWh")
 
 
 
 # Work out marginal cost of electricity
 #======================================
 
-print('\n\nELECTRICITY COSTS ' + str(year) + '\n')
+conditional_print('\n\nELECTRICITY COSTS ' + str(year) + '\n')
 
 # Count how many days (-1) the marginal power station will be used
 # (from https://stackoverflow.com/questions/58750929/python-pandas-dataframe-count-values-greater-than-or-equal-to-a-value-in-the-da)
@@ -252,17 +258,17 @@ nuclear_price          = 87
 
 def nice_print_1(name, price):
     price_f = (format(int(price), ',d'))
-    print(name + " = £" + str(price_f) + "m")
+    conditional_print(name + " = £" + str(price_f) + "m")
 
 def nice_print_2(name, price):
     price_f = (format(int(price), ',d'))
-    print(name + " = £" + str(price_f))
+    conditional_print(name + " = £" + str(price_f))
 
 def nice_print_3(name, price, gen, total_gen, total_price):
     price_f = (format(int(price), ',d'))
-    print(name + " = £" + str(price_f) + "m")
-    print("   percentage of total gen:   %.1f" % (100 * gen / total_gen) + "%")
-    print("   percentage of total cost:  %.1f" % (100 * price / total_price) + "%\n")
+    conditional_print(name + " = £" + str(price_f) + "m")
+    conditional_print("   percentage of total gen:   %.1f" % (100 * gen / total_gen) + "%")
+    conditional_print("   percentage of total cost:  %.1f" % (100 * price / total_price) + "%\n")
 
 other_renewables       = Hydro_total + Biomass_total + Tidal_total
 gas_gen                = Elec_from_methane_DF.sum().sum()/1000 *24
@@ -311,4 +317,6 @@ ax50.plot(GW_daily.index, Methane, label = 'Methane stored, GWh', color = 'black
 ax5.legend(loc='upper left')
 ax50.legend(loc='upper right')
 """""
+
+
 
