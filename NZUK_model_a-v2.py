@@ -79,9 +79,9 @@ print('SUPPLY')
 fig1 = plt.figure(figsize=(18,30))
 ax1 = fig1.add_subplot(411)
 ax1.set_xlim(GW_daily.index[0], GW_daily.index[-1])
-ax1.set(xlabel= 'Date', ylabel='Average daily power, GW', ylim=(0, 225), title='Supply and demand %.0f' % year)
-ax1.plot(GW_daily.index, GW_daily['wind'],     label = 'Wind power',    color = 'lime')
-ax1.plot(GW_daily.index, GW_daily['solar'],    label = 'Solar_power',   color = 'orange')
+ax1.set(xlabel= 'Date', ylabel='Average daily power, GW', ylim=(0, 200), title='Supply and demand -  %.0f weather' % year) 
+#ax1.plot(GW_daily.index, GW_daily['wind'],     label = 'Wind power',    color = 'lime')
+#ax1.plot(GW_daily.index, GW_daily['solar'],    label = 'Solar_power',   color = 'orange')
 Total_energy = (GW_daily['wind'] + GW_daily['solar'] + GW_daily['hydro'] + GW_daily['nuclear']                 + GW_daily['biomass'] + tidal)
 ax1.plot(GW_daily.index, Total_energy, label = 'Total power supply', color = 'royalblue')
 
@@ -153,8 +153,8 @@ Cooling_load[Cooling_load < 0] = 0                     # Only consider positive 
 Cooling_load = Cooling_load / 3                        # to give about same total as projected in CAT
 Cooling_total = Cooling_load.sum().sum() /1000 *24
 print(text1.format('cooling', Cooling_total, (Cooling_total *1000 /365 /24)))
-ax1.plot(GW_daily.index, (Cooling_load), label = 'Cooling load', color = 'black')
-ax1.plot(GW_daily.index, (Elec_heat_load), label = 'Elec_heat_load', color = 'red')
+#ax1.plot(GW_daily.index, (Cooling_load), label = 'Cooling load', color = 'black')
+#ax1.plot(GW_daily.index, (Elec_heat_load), label = 'Elec_heat_load', color = 'red')
 
 Industrial = [699/24] * Elec_heat_load.size
 Industrial_total = sum(Industrial)/1000 *24
@@ -197,7 +197,7 @@ plt.legend(loc = "upper center")
 fig12 = plt.figure(figsize=(18,40)) #80
 ax12 = fig12.add_subplot(616)
 ax12.set_xlim(GW_daily.index[0], GW_daily.index[-1])
-ax12.set(xlabel= 'Date', ylabel='Average daily power, GW', ylim=(0, 250), title='Daily supply %.0f weather' % year) #220
+ax12.set(xlabel= 'Date', ylabel='Average daily power, GW', ylim=(0, 250), title='Daily supply %.0f weather' % year) #250
 labels=["Solar power", "Hydroenergy", "Biomass energy", "Nuclear energy", "Tidal energy", "Wind power"]
 plt.stackplot(GW_daily.index, GW_daily['solar'], GW_daily['hydro'], GW_daily['biomass'], GW_daily['nuclear'], tidal, GW_daily['wind'], labels=labels, colors=colors)
 ax12.plot(GW_daily.index, electrical_load,      label = 'Total demand',   color = 'black')  # for comparison
@@ -243,14 +243,21 @@ for i, row in Ind_df.iterrows():
     else:
         Ind_df.at[i,'ind'] = (Ind_df.at[i,'ind'] * 365/350)
 
-#ax1.plot(GW_daily.index, Ind_df['ind', label ='New industrial demand', color ='darkkhaki')   # shows the four weeks of shutdown
+#ax1.plot(GW_daily.index, Ind_df['ind'], label ='New industrial demand', color ='darkkhaki')   # shows the four weeks of shutdown
 
 # Recalculate demand and excess    
 new_electrical_load = electrical_load - Industrial + Ind_df['ind']
-if no_elasticity == 1:
-    new_electrical_load = electrical_load # not counting shutdowns
+if no_elasticity == 1:                                                   # comment out to test with industrial shutdowns
+    new_electrical_load = electrical_load # not counting shutdowns       # comment out to test with industrial shutdowns
 ax1.plot(GW_daily.index, new_electrical_load, label = 'New electrical demand', color = 'black')
+#ax1.plot(GW_daily.index, excess_energy,  label = 'Excess renewable energy', color = 'blue')
 
+
+excess_energy = (Total_energy - new_electrical_load)  # per day
+excess_energy = (excess_energy[0:365])  # very strange - subtracting one 365-element list from another gives 366? 
+
+# Make a dataframe of energy deficits
+DeficitDf = pd.DataFrame(excess_energy, index=GW_daily.index, columns=['Balance']) 
 
 # Now arrange to run biomass power stations on just the worst n days
 # ==================================================================
@@ -266,7 +273,11 @@ for i, row in GW_daily.iterrows():
     else:
         GW_daily.at[i,'biomass'] = 0
 
-ax1.plot(GW_daily.index, GW_daily['biomass'], label = 'New biomass power', color = 'blue')
+# Make a dataframe of energy deficits
+DeficitDf = pd.DataFrame(excess_energy, index=GW_daily.index, columns=['Balance']) 
+#print (DeficitDf)
+
+ax1.plot(GW_daily.index, GW_daily['biomass'], label = 'Biomass power', color = 'green')
 ax1.legend() 
 
 
