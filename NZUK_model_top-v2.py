@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[4]:
+# In[7]:
 
 
 # Copyright (c) 2022 Andrew Williams
@@ -35,6 +35,7 @@ import os
 import numpy as np
 import datetime
 from datetime import date
+import csv
 plt.style.use("seaborn")
 pd.set_option('display.max_rows', None)
 
@@ -46,7 +47,7 @@ plt.rc('ytick', labelsize=15)
 plt.rc('legend', fontsize=15)
 
 year          = 2021                       # set a year from 2017 to 2021 to test
-condition     = 'no_demand_side_response__high_biomethane'          # set a condition
+condition     = 'no_demand_side_response'  # set a condition
 Elasticity    = -0.2                       # price elasticity of electricity demand 
 no_elasticity = 0                          # set to 1 if demand side responses not used
 second_pass   = 0                          # first time though "b" to set high biomethane for elasticity test
@@ -55,6 +56,7 @@ second_pass   = 0                          # first time though "b" to set high b
 # Set some parameters, and multipliers to renewables
 # First some test cases with demand reduction built in
 
+# This one has not been updated so probably WON'T WORK
 if condition == 'high_renewables':         # includes demand-side response measures
     mult_wind             = 13             # muliple of 2021 capacity
     mult_solar            = 9.5            # muliple of 2021 capacity
@@ -63,22 +65,25 @@ if condition == 'high_renewables':         # includes demand-side response measu
     Hydrogen_capacity     = 5000           # GWh storage
     Methane_store         = 20000          # GWh storage
 
+# To run with elasticity but without industrial shutdowns comment out line 245 in "a"
+    
 elif condition == 'high_biomethane':       # includes demand-side response measures
-    no_elasticity         = 0              #
-    mult_wind             = 8.5            # 
-    mult_solar            = 12             # 
+    no_elasticity         = 0              # E and Ind s/d    just E
+    mult_wind             = 8.75           # 8.75             9.25
+    mult_solar            = 13.5           # 13.5            12.25
     Electrolysis_rate     = 28             # 
     Bleed_off             = 200            # 
-    Hydrogen_capacity     = 6000           # 
+    Hydrogen_capacity     = 5000           # 
     Methane_store         = 30000          # 
     
 # Now run without the benfit of elasticity or industrial shutdowns for four weeks of year
 # (Adjusts line 214 in script 'a' and lines 40 and 54 in 'b') 
+# to run with just industrial shutdowns, comment out 245 and 246 in "a", uncomment 241
 
-elif condition == 'no_demand_side_response__high_biomethane': 
-    no_elasticity         = 1              #
-    mult_wind             = 11.5           # 
-    mult_solar            = 10.5           # 
+elif condition == 'no_demand_side_response': 
+    no_elasticity         = 1              # normal   ind shutdowns
+    mult_wind             = 11.5           # 11.5     10.5
+    mult_solar            = 10.5           # 10.5     10.8
     Electrolysis_rate     = 29             # 
     Bleed_off             = 250            # 
     Hydrogen_capacity     = 5000           # 

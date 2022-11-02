@@ -35,11 +35,11 @@ def conditional_print(message):
     
 # Suppress the graph for the first-pass pre-elastic results
 if (second_pass == 1 or no_elasticity == 1):
-    fig2 = plt.figure(figsize=(18,50))
+    fig2 = plt.figure(figsize=(18,40))
     ax2 = fig2.add_subplot(412)
     ax2.set_xlim(GW_daily.index[0], GW_daily.index[-1])
     #ax2.set_xlim(Heat_load.index[120], Heat_load.index[150])      # setup to zoom in to a chosen area
-    ax2.set(xlabel= 'Date', ylabel='Average daily power balance, GW', ylim=(-60, 150), title='Supply minus demand using storage, %.0f weather' % year)
+    ax2.set(xlabel= 'Date', ylabel='Average daily power balance, GW', ylim=(-80, 160), title='Supply minus demand using storage, %.0f weather' % year)
     zero_line = [0] * excess_energy.size
     ax2.plot(GW_daily.index, zero_line, color = 'grey')
 
@@ -83,7 +83,7 @@ Hydrogen = Hydrogen_stored
 Methane = Methane_stored
 Total_hydrogen_produced = 0
 Total_methane_produced = 0
-Methane_produced = [0]
+Methane_producedx20 = [0]
 state = 0
 M_state = 0
  
@@ -130,14 +130,14 @@ for i in range(1, excess_energy.size):
             M_state = 1
             New_M += (Bleed_off * Hydrogen_to_methane)      # methane added
             Total_methane_produced += (Bleed_off * Hydrogen_to_methane)
-            Methane_produced.append(5 * Bleed_off * Hydrogen_to_methane)            
+            Methane_producedx20.append(20 * Bleed_off * Hydrogen_to_methane)    # the x20 is for the graph        
         else:                                               # not much hydrogen left
             M_state = 2
             New_M += (Hydrogen_stored * Hydrogen_to_methane)  # use it all to make methane    
-            Methane_produced.append(5 * Hydrogen_stored * Hydrogen_to_methane)   
+            Methane_producedx20.append(20 * Hydrogen_stored * Hydrogen_to_methane)   
     else:
         M_state = 3
-        Methane_produced.append(0)                          # methane store is full
+        Methane_producedx20.append(0)                       # methane store is full
 
     if (Hydrogen_stored > Bleed_off):
         Hydrogen.append(Hydrogen_stored - Bleed_off)        # use some hydrogen to make methane
@@ -152,16 +152,16 @@ for i in range(1, excess_energy.size):
 # For debugging
 #    print( "%.0f"% state, "\t %.0f" % surplus, "\t %.0f"% New_H, "\t %.0f"% Hydrogen_stored, "\t %.0f"% Hydrogen[i],\
 #                             "\t %.0f"% New_M, "\t %.0f"% Methane_stored, "\t %.0f"% Bal, "\t %.0f"% Generated_elec,\
-#                             "\t %.0f"%  Methane_produced[i], "\t %.0f"%  M_state)
+#                             "\t %.0f"%  Methane_producedx20[i], "\t %.0f"%  M_state)
 
 if (second_pass == 1 or no_elasticity == 1):
-    fig20 = plt.figure(figsize=(18,50))
+    fig20 = plt.figure(figsize=(18,40))
     ax20 = fig20.add_subplot(412)
     ax20.set_xlim(GW_daily.index[0], GW_daily.index[-1])
-    ax20.set(xlabel= 'Date', ylabel='Gas stored, GWh', ylim=(0, 35000))
+    ax20.set(xlabel= 'Date', ylabel='Gas stored, GWh', ylim=(0, 38000))
     ax20.plot(GW_daily.index, Hydrogen, label = 'Hydrogen stored', color = 'darkorange')
     ax20.plot(GW_daily.index, Methane, label = 'Methane stored', color = 'black')
-    ax20.plot(GW_daily.index, (Methane_produced), label = 'Methane produced x 5', color = 'burlywood')
+    ax20.plot(GW_daily.index, (Methane_producedx20), label = 'Methane produced x 20', color = 'turquoise')
     ax20.plot(GW_daily.index, zero_line, color = 'silver')
     ax2.plot(GW_daily.index, Balance_w_Methane, label = 'Balance including Methane', color = 'darkviolet')
     ax2.fill_between(GW_daily.index, Balance_w_Methane, color = 'plum')
@@ -191,18 +191,18 @@ conditional_print("CO2 removed if power stations have CCS        = %.1f" % (CO2_
 conditional_print("Total energy used up with methane losses      = %.1f" % efficiency_losses + " TWh")
 conditional_print("Methane in stock at end of year               = %.1f" % (Methane_stored/1000) + " TWh")
 conditional_print("... percentage of max reserves                = %.1f" % (100*Methane_stored/Methane_capacity) + " %  (should be ~75%)")
-
+#print(Elec_from_methane_DF)
 
 conditional_print('\nPOWER STATIONS')
 #========================
 
 conditional_print("Biomass power stations needed                 = %.1f" % (Total_biomass/days_to_run_biomass/24) + " GW" +     "   (capacity of DRAX is 3.9 GW)")
-Elec_from_methane_DF[Elec_from_methane_DF < 0] = 0                               # delete negatives
+Elec_from_methane_DF[Elec_from_methane_DF < 0] = 0               # delete negatives
 if (second_pass == 1 or no_elasticity == 1):
     ax2.plot(GW_daily.index, Elec_from_methane, label = 'Electricity from biomethane', color = 'green') # Can't plot Elec_from_methane_DF??
     ax2.fill_between(GW_daily.index, Elec_from_methane_DF["elec_from_methane"], color = 'palegreen') 
 Max_daily_elec_from_methane = Elec_from_methane_DF['elec_from_methane'].nlargest(n=1)
-conditional_print("Methane power stations needed                 = %.1f" % (Max_daily_elec_from_methane) + " GW" +      "  (max gas-fired power in 2021 was 25 GW)")
+conditional_print("Methane power stations needed                 = %.1f" % (Max_daily_elec_from_methane) + " GW" + "  (max gas-fired power in 2021 was 25 GW)")
 conditional_print("Total electricity generated from methane      = %.1f" % (Elec_from_methane_DF.sum().sum()/1000 *24) + " TWh")
 
 
@@ -219,7 +219,7 @@ counts = ( (Elec_from_methane_DF.sort_values('elec_from_methane',ascending=False
                                      .groupby(Elec_from_methane_DF['elec_from_methane'])                                                              
                                      .transform('max') ) + 1
 Elec_df = Elec_from_methane_DF.assign(greater_than_value = counts)
-
+#print('Elec_df = ', Elec_df )
 
 # So work out the cost of electricity for each day
 # Some of following figures from gov site - see notes 
@@ -234,23 +234,74 @@ LCOE_of_renewables    = 50            # £50 per MWh approx (all power other tha
 cost = [0]                            # starting point cost of electricity per MWh (£)
 days_with_gas = 0 
 cost_with_gas = 0
+lf_accum = 0
+
+
+# Calculate daily LCOE
+
+# First add renewables supply and gas required columns to DeficitDf
+DeficitDf['gen']  = Total_energy*24
+if second_pass == 0:
+    DeficitDf['load'] = new_electrical_load*24
+
+for i, row in DeficitDf.iterrows():
+     if DeficitDf.at[i,'Balance'] < 0:
+        gas_gen = (DeficitDf.at[i,'Balance']*24) * (-1)
+        renewables_used = DeficitDf.at[i,'load'] - gas_gen
+        renewables_unit_cost = LCOE_of_renewables
+     else:
+        gas_gen = 0
+        renewables_unit_cost = LCOE_of_renewables * (DeficitDf.at[i,'gen'] / DeficitDf.at[i,'load'])
+  
+     DeficitDf.at[i,'gas_gen'] = gas_gen
+     renewables_used = DeficitDf.at[i,'load'] - gas_gen
+     DeficitDf.at[i,'renewables_used'] = renewables_used
+     DeficitDf.at[i,'renewables_unit_cost'] = renewables_unit_cost
+    
 
 # So for a 1000 MW power station
 for i, row in Elec_df.iterrows():
     if Elec_df.at[i,'greater_than_value'] == 365:
         Elec_per_MWh = LCOE_of_renewables
+        DeficitDf.at[i,'gas_unit_cost'] = 0        
     else:
         days_with_gas += 1
         Load_factor = (Elec_df.at[i,'greater_than_value']) / 365
         Elec_per_MWh = ((((Capex_per_MW *1000)+(Infrastructure)) / Simple_term) + (Operating_cost_per_MW *1000))                      / ((Hours_per_year *1000 *Load_factor)) + (Gas_cost_per_MWh / Efficiency) 
         cost_with_gas += Elec_per_MWh
+        lf_accum += Load_factor
     cost.append(Elec_per_MWh)
-
-# (Gas generation cost is overstated by about 10% because all power stations get paid at the top marginal rate)
+    DeficitDf.at[i,'gas_unit_cost'] = (Elec_per_MWh + 223)/2  # Average with the lowest gas cost since most stations not marginal
+    DeficitDf.at[i,'gas_cost'] = (DeficitDf.at[i,'gas_unit_cost'] * DeficitDf.at[i,'gas_gen']) 
+    DeficitDf.at[i,'renewables_cost'] = (DeficitDf.at[i,'renewables_unit_cost'] * DeficitDf.at[i,'renewables_used'])  
+    DeficitDf.at[i,'daily_cost'] = (DeficitDf.at[i,'renewables_cost'] + DeficitDf.at[i,'gas_cost'])      
+    DeficitDf.at[i,'unit_cost'] = (DeficitDf.at[i,'daily_cost'] / DeficitDf.at[i,'load'])      
 
 Average_LCOE = sum(cost[1:366])/365
-Average_cost_with_gas = cost_with_gas / days_with_gas       
-    
+
+# Export to csv to analyse
+#DeficitDf.to_csv('/Users/User/Documents/MSc/Dissertation/Data/DeficitDf_3.csv')
+
+#"""""
+fig6 = plt.figure(figsize=(18,30))
+ax6 = fig6.add_subplot(413)
+ax6.set_xlim(GW_daily.index[0], GW_daily.index[-1]) 
+ax6.set(xlabel= 'Date', ylabel='Electricity daily LCOE £m', ylim=(0, 800), title='Daily total cost of electricity %.0f weather' % year)
+ax6.plot(GW_daily.index, DeficitDf['daily_cost']/1000, label = 'Electricity daily LCOE', color = 'black')
+ax6.legend(loc='upper center')
+"""""
+fig7 = plt.figure(figsize=(18,30))
+ax7 = fig7.add_subplot(413)
+ax7.set_xlim(GW_daily.index[0], GW_daily.index[-1]) 
+ax7.set(xlabel= 'Date', ylabel='Daily unit LCOE £/MWh', ylim=(0, 900), title='Daily unit cost of electricity %.0f' % year)
+ax7.plot(GW_daily.index, DeficitDf['unit_cost'], label = 'Electricity daily unit LCOE', color = 'black')
+ax7.legend(loc='upper center')
+"""""
+
+Av_LF = lf_accum / 365
+conditional_print("Average gas power station load factor = %.3f" % Av_LF)
+
+     
 # Now calculate total electricity price - can run with different scenarios
 # Do not include infrastructure such as grid strengthening as that should be common for all      
 
@@ -258,7 +309,7 @@ Average_cost_with_gas = cost_with_gas / days_with_gas
 wind_price             = 46
 solar_price            = 39
 other_renewables_price = 100
-nuclear_price          = 87
+nuclear_price          = 70 
 
 def nice_print_1(name, price):
     price_f = (format(int(price), ',d'))
@@ -268,41 +319,40 @@ def nice_print_2(name, price):
     price_f = (format(int(price), ',d'))
     conditional_print(name + " = £" + str(price_f))
 
-def nice_print_3(name, price, gen, total_gen, total_price):
-    price_f = (format(int(price), ',d'))
-    conditional_print(name + " = £" + str(price_f) + "m")
-    conditional_print("   percentage of total gen:   %.1f" % (100 * gen / total_gen) + "%")
-    conditional_print("   percentage of total cost:  %.1f" % (100 * price / total_price) + "%\n")
-
+def nice_print_4(name, gen, total_gen):
+    conditional_print(name)     
+    conditional_print("   percentage of total gen: %.1f" % (100 * gen / total_gen) + "%")
+     
 other_renewables       = Hydro_total + Biomass_total + Tidal_total
-gas_gen                = Elec_from_methane_DF.sum().sum()/1000 *24
+gas_gen                = DeficitDf['gas_gen'].sum().sum()/1000
 
 # Total price for each generator - in units of £m
 wind_total_price               = Wind_total * wind_price
 solar_total_price              = Solar_total * solar_price
 other_renewables_total_price   = other_renewables * other_renewables_price
 nuclear_total_price            = Nuclear_total * nuclear_price
-gas_fired_total_price          = Average_cost_with_gas * gas_gen
-total_LCOE                     = wind_total_price + solar_total_price + other_renewables_total_price +                                  nuclear_total_price + gas_fired_total_price
-LCOE_per_MWh                   = total_LCOE / Demand_total
+non_gas_total_gen              = DeficitDf['renewables_used'].sum().sum()
+non_gas_total_cost             = DeficitDf['renewables_cost'].sum().sum()
+gas_fired_total_price          = DeficitDf['gas_cost'].sum().sum()
+total_LCOE                     = DeficitDf['daily_cost'].sum().sum()/1000  # to convert from thousands to millions
+LCOE_per_MWh                   = DeficitDf['unit_cost'].mean()
+Total_generation               = DeficitDf['gen'].sum().sum()/1000   #TWh
 
-nice_print_2("Average LCOE/MWh          ", Average_LCOE)    
-#nice_print_2("Average gas gen LCOE/MWh  ", Average_cost_with_gas)    
-nice_print_3("\nWind total LCOE           ", wind_total_price, Wind_total, Generation_total, total_LCOE)
-nice_print_3("Solar total LCOE          ", solar_total_price, Solar_total, Generation_total, total_LCOE)    
-nice_print_3("Other renewables LCOE     ", other_renewables_total_price, other_renewables, Generation_total, total_LCOE)    
-nice_print_3("Nuclear LCOE              ", nuclear_total_price, Nuclear_total, Generation_total, total_LCOE)    
-nice_print_3("Gas fired_total LCOE      ", gas_fired_total_price, gas_gen, Generation_total, total_LCOE)    
-nice_print_1("Total electricity LCOE    ", total_LCOE)    
 
-nice_print_2("\nAverage cost/MWh - top marginal cost basis                                   ", Average_LCOE)    
-nice_print_2("Average generation price per MWh - cost to generate basis, free surplus      ", LCOE_per_MWh)  
-nice_print_2("Average generation price per MWh - cost to generate basis, non-free surplus  ", (total_LCOE / Generation_total))  
+nice_print_4("\nWind total           ", Wind_total, Total_generation)
+nice_print_4("Solar total            ", Solar_total, Total_generation)    
+nice_print_4("Other renewables       ", other_renewables, Total_generation)    
+nice_print_4("Nuclear                ", Nuclear_total, Total_generation)    
+nice_print_4("Gas fired_total        ", gas_gen, Total_generation)
+print('\n')
+nice_print_1("Total electricity LCOE ", total_LCOE)    
+nice_print_2("Average LCOE/MWh       ", LCOE_per_MWh)  
 
 if (second_pass == 1 or no_elasticity == 1):
     ax2.legend(loc='upper left')
     ax20.legend(loc='upper left')
 
+                                   
 """""
 # Special plot for illustration in report
 # Make the graph text normal
@@ -317,10 +367,13 @@ ax5 = fig5.add_subplot(512)
 ax5.set_xlim(GW_daily.index[220], GW_daily.index[310])   # setup to zoom in to a chosen area
 ax5.set(xlabel='date', ylabel='Average daily power balance, GW', ylim=(-60, 150), title='Supply minus demand with storage example')
 zero_line = [0] * excess_energy.size
-plt.xticks([2021-12])  # this stops the dates being printed along x axis
+
+plt.xticks(rotation=45)  # this stops the dates being printed along x axis
 ax5.plot(GW_daily.index, zero_line, color = 'grey')
 ax5.plot(GW_daily.index, excess_energy,  label = 'Excess renewable energy', color = 'blue')
 ax5.fill_between(GW_daily.index, excess_energy, color = 'cyan')
+ax5.plot(GW_daily.index, Elec_from_methane, label = 'Electricity from biomethane', color = 'red')
+
 ax50 = ax5.twinx()
 ax50.set(ylabel='Gas stored, GWh', ylim=(0, 25000))
 ax50.plot(GW_daily.index, Hydrogen, label = 'Hydrogen stored, GWh', color = 'darkorange')
